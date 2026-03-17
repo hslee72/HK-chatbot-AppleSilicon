@@ -20,7 +20,10 @@ from server.config import (
     EMBED_MODEL,
     CHUNK_SIZE,
     CHUNK_OVERLAP,
+    OCR_ENABLED,
+    VLM_ENABLED,
 )
+from server.rag.parsers import parse_pdf
 
 logger = logging.getLogger(__name__)
 
@@ -84,20 +87,32 @@ def get_document_list(tenant_id: str) -> list[dict]:
 
 # ─── PDF → LlamaIndex Documents ──────────────────────────────────────────────
 
-def _pdf_to_documents(pdf_path: Path) -> list[Document]:
-    """Parse a single PDF into LlamaIndex Document objects (one per page)."""
-    reader = PdfReader(str(pdf_path))
+def _pdf_to_documents(
+    pdf_path: Path,
+    use_ocr: bool = True,
+    use_vlm: bool = False,
+) -> list[Document]:
+    """
+    Parse a single PDF into LlamaIndex Document objects (one per page).
+    Uses smart multi-strategy parser: text → OCR → table → VLM.
+    """
+    page_results = parse_pdf(pdf_path, use_ocr=use_ocr, use_vlm=use_vlm)
+    total_pages = len(page_results)
     documents = []
-    for page_num, page in enumerate(reader.pages, start=1):
-        text = page.extract_text()
-        if not text or not text.strip():
+
+    for pr in page_results:
+        if not pr["text"] or not pr["text"].strip():
             continue
         doc = Document(
-            text=text,
+            text=pr["text"],
             metadata={
                 "source": pdf_path.name,
-                "page": page_num,
-                "total_pages": len(reader.pages),
+                "page": pr["page"],
+                "total_pages": total_pages,
+                "parse_method": pr["method"],
+                "parse_quality": pr["quality"],
+                "has_tables": pr["has_tables"],
+                "has_images": pr["has_images"],
             },
         )
         documents.append(doc)
@@ -109,6 +124,8 @@ def _pdf_to_documents(pdf_path: Path) -> list[Document]:
 def ingest_pdfs(
     tenant_id: str,
     pdf_paths: list[Path] | None = None,
+    use_ocr: bool | None = None,
+    use_vlm: bool | None = None,
 ) -> dict:
     """
     Ingest PDF files into tenant-specific ChromaDB collection.
@@ -116,10 +133,16 @@ def ingest_pdfs(
     Args:
         tenant_id: Target tenant identifier.
         pdf_paths: Specific PDFs to ingest. If None, ingest all PDFs in DATA_DIR.
+        use_ocr: Enable OCR for scanned pages. None = use config default.
+        use_vlm: Enable VLM for image descriptions. None = use config default.
 
     Returns:
         Summary dict with counts and metadata.
     """
+    if use_ocr is None:
+        use_ocr = OCR_ENABLED
+    if use_vlm is None:
+        use_vlm = VLM_ENABLED
     if pdf_paths is None:
         pdf_paths = sorted(DATA_DIR.glob("*.pdf"))
 
@@ -134,7 +157,7 @@ def ingest_pdfs(
         logger.info("Parsing: %s", pdf_path.name)
         try:
             meta = _extract_pdf_metadata(pdf_path)
-            docs = _pdf_to_documents(pdf_path)
+            docs = _pdf_to_documents(pdf_path, use_ocr=use_ocr, use_vlm=use_vlm)
             all_docs.extend(docs)
             doc_metadata_list.append(meta)
             _save_document_metadata(tenant_id, meta)

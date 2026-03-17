@@ -17,6 +17,11 @@ LLM_MODEL = os.getenv("LLM_MODEL", "qwen2.5:7b")
 # ─── Embedding (HuggingFace, runs locally — no Ollama dependency) ─────────────
 EMBED_MODEL = os.getenv("EMBED_MODEL", "intfloat/multilingual-e5-large")
 
+# ─── OCR / VLM ─────────────────────────────────────────────────────────────────
+VLM_MODEL = os.getenv("VLM_MODEL", "glm-5:cloud")
+OCR_ENABLED = os.getenv("OCR_ENABLED", "true").lower() == "true"
+VLM_ENABLED = os.getenv("VLM_ENABLED", "false").lower() == "true"
+
 # ─── Chunking ─────────────────────────────────────────────────────────────────
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "512"))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "64"))
