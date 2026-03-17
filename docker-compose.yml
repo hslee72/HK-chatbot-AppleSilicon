@@ -1,0 +1,20 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data:ro
+      - chroma_data:/app/chroma_db
+      - tenants_data:/app/tenants_store
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - LLM_MODEL=nemotron-3-super:cloud
+      - EMBED_MODEL=intfloat/multilingual-e5-small
+    restart: unless-stopped
+
+volumes:
+  chroma_data:
+  tenants_data:
