@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2026-03-18
+
+### Added
+- Heungkuk Life Insurance official CI favicon (`frontend/public/favicon.ico`)
+- Korean IME (hangul) composition handling — prevents last character from being left behind on Enter
+
+### Changed
+- Updated `README.md` (English) and `README.ko.md` (Korean) with latest features
+- Updated `CHANGELOG.md` with v0.2.1 release
+
 ## [0.2.0] - 2026-03-17
 
 ### Added

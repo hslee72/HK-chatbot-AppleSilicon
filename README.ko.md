@@ -19,6 +19,8 @@ HK-chatbot2는 기업 규정 PDF를 대상으로 한 RAG(Retrieval-Augmented Gen
 - **표 추출** — pdfplumber로 표 감지 후 마크다운 구조화
 - **VLM 연동** — Ollama 비전 모델로 차트/도표 텍스트 설명 생성
 - **Docker/Colima 배포** — 단일 명령 배포, 저사양 환경 최적화
+- **한글 IME 지원** — 채팅 입력 시 한글 조합 중 Enter 전송 문제 해결
+- **흥국생명 CI** — 공식 기업 favicon 적용
 
 ---
 
@@ -279,6 +281,7 @@ docker compose up --build -d
 
 - [x] **Phase 1** — RAG 파이프라인 + 출처 인용 답변
 - [x] **Phase 1.5** — OCR + VLM 스마트 PDF 파싱
+- [x] **Phase 1.6** — 흥국생명 CI favicon, 한글 IME 수정, 이중언어 문서
 - [ ] **Phase 2** — QA 로그 수집 → LoRA 파인튜닝 (도메인 스타일/추론 패턴)
 - [ ] **Phase 3** — Auth/RBAC, 테넌트별 프롬프트 커스터마이즈, 관리자 대시보드
 

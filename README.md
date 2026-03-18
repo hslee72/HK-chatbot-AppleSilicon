@@ -19,6 +19,8 @@ HK-chatbot2 is a Retrieval-Augmented Generation (RAG) chatbot designed for query
 - **Table Extraction** — Tables detected and preserved as structured markdown via pdfplumber
 - **VLM Integration** — Charts and figures described by Vision-Language Model (Ollama cloud)
 - **Docker/Colima Ready** — Single-command deployment, optimized for low-resource environments
+- **Korean IME Support** — Proper hangul composition handling in chat input
+- **Heungkuk Life CI** — Official corporate favicon applied
 
 ---
 
@@ -276,6 +278,7 @@ docker compose up --build -d
 
 - [x] **Phase 1** — RAG pipeline with citation support
 - [x] **Phase 1.5** — OCR + VLM smart PDF parsing
+- [x] **Phase 1.6** — Heungkuk Life CI favicon, Korean IME fix, bilingual docs
 - [ ] **Phase 2** — QA log collection → LoRA fine-tuning
 - [ ] **Phase 3** — Auth/RBAC, per-tenant prompts, admin dashboard
 
