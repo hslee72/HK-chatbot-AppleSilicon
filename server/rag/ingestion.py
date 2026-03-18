@@ -1,20 +1,22 @@
-"""PDF ingestion pipeline: parse → chunk → embed → store in ChromaDB."""
+"""PDF ingestion pipeline: parse → chunk → embed → store in Qdrant."""
 
 import json
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
 
-import chromadb
 from pypdf import PdfReader
+from qdrant_client import QdrantClient
 
 from llama_index.core import Document, StorageContext, VectorStoreIndex
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.vector_stores.chroma import ChromaVectorStore
+from llama_index.vector_stores.qdrant import QdrantVectorStore
 
 from server.config import (
-    CHROMA_DIR,
+    QDRANT_URL,
+    QDRANT_PORT,
+    QDRANT_API_KEY,
     DATA_DIR,
     TENANTS_DIR,
     EMBED_MODEL,
@@ -185,14 +187,18 @@ def ingest_pdfs(
     nodes = splitter.get_nodes_from_documents(all_docs)
     logger.info("Total nodes after chunking: %d", len(nodes))
 
-    # Embed + store in ChromaDB
+    # Embed + store in Qdrant
     embed_model = HuggingFaceEmbedding(model_name=EMBED_MODEL)
 
-    chroma_client = chromadb.PersistentClient(path=str(CHROMA_DIR))
+    qdrant_client = QdrantClient(
+        url=QDRANT_URL, port=QDRANT_PORT, api_key=QDRANT_API_KEY,
+    )
     collection_name = f"tenant_{tenant_id}"
-    chroma_collection = chroma_client.get_or_create_collection(collection_name)
 
-    vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+    vector_store = QdrantVectorStore(
+        client=qdrant_client,
+        collection_name=collection_name,
+    )
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
     VectorStoreIndex(

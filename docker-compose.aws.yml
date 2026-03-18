@@ -9,23 +9,22 @@ services:
     restart: unless-stopped
 
   app:
-    build: .
+    image: 541974874550.dkr.ecr.ap-northeast-2.amazonaws.com/hk-chatbot2:latest
     ports:
       - "8000:8000"
     volumes:
-      - ./data:/app/data:ro
       - tenants_data:/app/tenants_store
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
       - QDRANT_URL=http://qdrant
       - QDRANT_PORT=6333
-      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - S3_DATA_BUCKET=hk-chatbot2-data-541974874550
+      - AWS_REGION=ap-northeast-2
       - LLM_MODEL=nemotron-3-super:cloud
       - EMBED_MODEL=intfloat/multilingual-e5-small
       - OCR_ENABLED=true
       - VLM_ENABLED=false
-      - VLM_MODEL=glm-5:cloud
     depends_on:
       - qdrant
     restart: unless-stopped
