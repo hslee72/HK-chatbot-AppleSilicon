@@ -6,7 +6,10 @@ from pathlib import Path
 # ─── Paths ────────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = Path(os.getenv("DATA_DIR", str(BASE_DIR / "data")))
-CHROMA_DIR = Path(os.getenv("CHROMA_DIR", str(BASE_DIR / "chroma_db")))
+# ─── Qdrant ───────────────────────────────────────────────────────────────────
+QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost")
+QDRANT_PORT = int(os.getenv("QDRANT_PORT", "6333"))
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", None)
 TENANTS_DIR = Path(os.getenv("TENANTS_DIR", str(BASE_DIR / "tenants_store")))
 STATIC_DIR = Path(os.getenv("STATIC_DIR", str(BASE_DIR / "static")))
 
@@ -16,6 +19,11 @@ LLM_MODEL = os.getenv("LLM_MODEL", "qwen2.5:7b")
 
 # ─── Embedding (HuggingFace, runs locally — no Ollama dependency) ─────────────
 EMBED_MODEL = os.getenv("EMBED_MODEL", "intfloat/multilingual-e5-large")
+
+# ─── OCR / VLM ─────────────────────────────────────────────────────────────────
+VLM_MODEL = os.getenv("VLM_MODEL", "glm-5:cloud")
+OCR_ENABLED = os.getenv("OCR_ENABLED", "true").lower() == "true"
+VLM_ENABLED = os.getenv("VLM_ENABLED", "false").lower() == "true"
 
 # ─── Chunking ─────────────────────────────────────────────────────────────────
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "512"))

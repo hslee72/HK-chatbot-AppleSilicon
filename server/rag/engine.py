@@ -2,16 +2,18 @@
 
 import logging
 
-import chromadb
+from qdrant_client import QdrantClient
 
 from llama_index.core import VectorStoreIndex
 from llama_index.core.query_engine import CitationQueryEngine
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.ollama import Ollama
-from llama_index.vector_stores.chroma import ChromaVectorStore
+from llama_index.vector_stores.qdrant import QdrantVectorStore
 
 from server.config import (
-    CHROMA_DIR,
+    QDRANT_URL,
+    QDRANT_PORT,
+    QDRANT_API_KEY,
     OLLAMA_BASE_URL,
     LLM_MODEL,
     EMBED_MODEL,
@@ -24,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 class RegulationRAGEngine:
-    """Per-tenant RAG engine backed by ChromaDB + Ollama."""
+    """Per-tenant RAG engine backed by Qdrant + Ollama."""
 
     def __init__(self, tenant_id: str):
         self.tenant_id = tenant_id
@@ -37,13 +39,16 @@ class RegulationRAGEngine:
             system_prompt=REGULATION_SYSTEM_PROMPT,
         )
         self.embed_model = HuggingFaceEmbedding(model_name=EMBED_MODEL)
+        self._qdrant_client = QdrantClient(
+            url=QDRANT_URL, port=QDRANT_PORT, api_key=QDRANT_API_KEY,
+        )
 
     def _get_index(self) -> VectorStoreIndex:
         """Load the tenant's vector store index."""
-        chroma_client = chromadb.PersistentClient(path=str(CHROMA_DIR))
-        chroma_collection = chroma_client.get_or_create_collection(self.collection_name)
-
-        vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+        vector_store = QdrantVectorStore(
+            client=self._qdrant_client,
+            collection_name=self.collection_name,
+        )
         return VectorStoreIndex.from_vector_store(
             vector_store=vector_store,
             embed_model=self.embed_model,
@@ -107,8 +112,7 @@ class RegulationRAGEngine:
     def has_documents(self) -> bool:
         """Check if this tenant has any indexed documents."""
         try:
-            chroma_client = chromadb.PersistentClient(path=str(CHROMA_DIR))
-            collection = chroma_client.get_or_create_collection(self.collection_name)
-            return collection.count() > 0
+            collection_info = self._qdrant_client.get_collection(self.collection_name)
+            return collection_info.points_count > 0
         except Exception:
             return False

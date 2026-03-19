@@ -16,6 +16,8 @@ router = APIRouter(tags=["ingest"])
 class IngestRequest(BaseModel):
     tenant_id: str = "default"
     filenames: list[str] | None = None  # None = ingest all PDFs in data/
+    use_ocr: bool | None = None         # None = use config default (OCR_ENABLED)
+    use_vlm: bool | None = None         # None = use config default (VLM_ENABLED)
 
 
 @router.post("/ingest")
@@ -38,7 +40,10 @@ async def ingest_documents(req: IngestRequest):
             pdf_paths.append(p)
 
     # Run ingestion in thread pool (CPU-bound)
-    result = await asyncio.to_thread(ingest_pdfs, req.tenant_id, pdf_paths)
+    result = await asyncio.to_thread(
+        ingest_pdfs, req.tenant_id, pdf_paths,
+        use_ocr=req.use_ocr, use_vlm=req.use_vlm,
+    )
     return result
 
 

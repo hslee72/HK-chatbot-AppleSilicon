@@ -8,14 +8,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-from server.config import STATIC_DIR, CHROMA_DIR, TENANTS_DIR
+from server.config import STATIC_DIR, TENANTS_DIR
 from server.routers import chat, documents, ingest, tenants, health
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Ensure required directories exist on startup."""
-    CHROMA_DIR.mkdir(parents=True, exist_ok=True)
     TENANTS_DIR.mkdir(parents=True, exist_ok=True)
     yield
 

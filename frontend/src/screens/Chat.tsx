@@ -10,6 +10,7 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const isComposing = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -69,7 +70,7 @@ export default function ChatScreen() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !isComposing.current) {
       e.preventDefault();
       sendMessage();
     }
@@ -192,6 +193,8 @@ export default function ChatScreen() {
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onCompositionStart={() => { isComposing.current = true; }}
+              onCompositionEnd={() => { isComposing.current = false; }}
               onKeyDown={handleKeyDown}
               placeholder="규정에 대해 질문하세요… (Enter 전송, Shift+Enter 줄바꿈)"
               rows={1}
